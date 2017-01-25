@@ -8,11 +8,19 @@
   <IgnoredWords>
     <Ignore>blackmesa</Ignore>
     <Ignore>csgo</Ignore>
+    <Ignore>Docker</Ignore>
     <Ignore>dods</Ignore>
-    <Ignore>garrysmod</Ignore>
-    <Ignore>llgameserverbot</Ignore>
-    <Ignore>svencoop</Ignore>
     <Ignore>foreach</Ignore>
+    <Ignore>garrysmod</Ignore>
+    <Ignore>goldsource</Ignore>
+    <Ignore>llgameserverbot</Ignore>
+    <Ignore>metamod</Ignore>
+    <Ignore>sourcemod</Ignore>
+    <Ignore>svencoop</Ignore>
+    <Ignore>username</Ignore>
+    <Ignore>webhook</Ignore>
+    <Ignore>webhooks</Ignore>
+    <Ignore>deathmatch</Ignore>
   </IgnoredWords>
   <InheritExclusionExpressions>True</InheritExclusionExpressions>
   <InheritIgnoredFilePatterns>True</InheritIgnoredFilePatterns>

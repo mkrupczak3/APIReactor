@@ -14,6 +14,7 @@ namespace SteamReaction
     using System.Threading;
     using Newtonsoft.Json;
     using SteamKit2;
+    using SteamReaction.Triggers;
     using Console = Colorful.Console;
 
     /// <summary>Main entry point of application.</summary>
@@ -25,11 +26,14 @@ namespace SteamReaction
         /// <summary></summary>
         private static readonly string DataFile = AppPath + Path.DirectorySeparatorChar + "SteamReaction.json";
 
+        /// <summary>Contains the text padding of the console-display columns.</summary>
+        private static readonly byte[] DisplayCols = { 48, 12, 18, 18, 22 };
+
         /// <summary>Full path to log file.</summary>
         private static readonly string LogFile = AppPath + Path.DirectorySeparatorChar + "SteamReaction.log";
 
         /// <summary>Number of seconds in the main loop.</summary>
-        private static readonly int SettingMainLoopDelay = 600;
+        private static readonly int SettingMainLoopDelay = 4;
 
         private static List<SteamHook> triggerList;
 
@@ -38,44 +42,44 @@ namespace SteamReaction
 
         /// <summary>Main entry point of application</summary>
         /// <param name="args">Command line arguments</param>
-        /// <returns>Exit code</returns>
+        /// <returns>Windows Exit Code</returns>
         protected static int Main(string[] args)
         {
+            Debug.WriteLine("Main() called.");
+
+            Console.SetWindowSize(120, 35);
+
+            triggerList = BuildData.Builder();
+
+            return MonitorSteamAPI();
+
+            return 0;
+        }
+
+        /// <summary>Monitors steam via it's web API.</summary>
+        /// <returns>Windows Exit Code</returns>
+        protected static int MonitorSteamAPI()
+        {
+            if (triggerList == null || triggerList.Count < 1)
+            {
+                System.Console.WriteLine("No triggers defined - nothing to do.");
+                return 0;
+            }
+
             using (logHandle = File.AppendText(LogFile))
             {
                 Log(2, "Starting");
-
-                // Open Data File
-                {
-                    if (!File.Exists(DataFile))
-                    {
-                        Console.Write("Data file '" + DataFile + "' not found!\nExiting.");
-                        Log("Couldn't find data file!");
-                        return 1;
-                    }
-
-                    try
-                    {
-                        triggerList = JsonConvert.DeserializeObject<List<SteamHook>>(File.ReadAllText(DataFile));
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Datafile appears corrupt!");
-                        System.Console.WriteLine("Details: " + ex.Message);
-
-                        return 1;
-                    }
-                }
 
                 while (true)
                 {
                     Console.Clear();
                     Console.WriteLine(DateTime.Now.ToString(), Color.DarkGray);
                     Console.WriteAscii(" Steam Reaction");
-                    Console.Write("[Name]".PadRight(44));
-                    Console.Write("[Current Version]".PadRight(20));
-                    Console.Write("[Steam Version]".PadRight(20));
-                    Console.WriteLine("[Last Triggered]");
+                    Console.Write("[Name]".PadRight(DisplayCols[0]));
+                    Console.Write("[AppId]".PadRight(DisplayCols[1]));
+                    Console.Write("[Steam Version]".PadRight(DisplayCols[2]));
+                    Console.Write("[Current Version]".PadRight(DisplayCols[3]));
+                    Console.WriteLine("[Last Triggered]".PadRight(DisplayCols[4]));
 
                     // UPDATE LOOP
                     {
@@ -84,6 +88,8 @@ namespace SteamReaction
                         // Don't use foreach as we want to pass by reference (and not a read-only copy)
                         for (int i = 0; i < triggerList.Count; i++)
                         {
+                            Array.Sort(triggerList[i].SteamAppIds);
+
                             jsonBefore = JsonConvert.SerializeObject(triggerList[i]);
 
                             CheckHook(triggerList[i]);
@@ -96,12 +102,15 @@ namespace SteamReaction
                                 // run trigger
                             }
 
-                            ConsoleCountdown("\tNext query in", 11, 23, true);
+                            if (i + 1 < triggerList.Count)
+                            {
+                                ConsoleCountdown(("Querying for `" + triggerList[i + 1].Name).Truncate(60, "..") + "` in", 9, 21, true);
+                            }
                         }
                     }
 
                     Console.WriteLine();
-                    ConsoleCountdown("Restarting in", SettingMainLoopDelay);
+                    ConsoleCountdown("Re-running all checks in", SettingMainLoopDelay);
                 }
             }
         }
@@ -178,35 +187,71 @@ namespace SteamReaction
 
         protected static void CheckHook(SteamHook hook)
         {
-            bool processTrigger = false;
-
-            Console.Write(hook.Name.PadRight(44));
-
-            int steamVersion = GetSteamVersion(hook);
-            if (hook.LastKnownVersion == steamVersion)
+            if (hook.LastKnownVersions == null)
             {
-                Console.Write(hook.LastKnownVersion.ToString().PadRight(20), Color.Green);
-            }
-            else
-            {
-                Console.Write(hook.LastKnownVersion.ToString().PadRight(20), Color.Red);
-                processTrigger = true;
-                hook.LastKnownVersion = steamVersion;
+                hook.LastKnownVersions = new Dictionary<int, string>();
             }
 
-            Console.Write(steamVersion.ToString().PadRight(20));
+            bool executeTriggers = false;
 
-            if (processTrigger)
+            for (int i = 0; i < hook.SteamAppIds.Length; i++)
+            {
+                char paddingChar;
+
+                if (i == 0)
+                {
+                    paddingChar = '·';
+
+                    Console.Write(hook.Name.Truncate(DisplayCols[0] - 2, "..").PadRight(DisplayCols[0], paddingChar));
+                }
+                else
+                {
+                    paddingChar = ' ';
+                    ConsoleCountdown(string.Empty.PadRight(DisplayCols[0]) + "Querying in", 2, 4, true);
+                    Console.Write(string.Empty.PadRight(DisplayCols[0], paddingChar));
+                }
+
+                int steamAppId = hook.SteamAppIds[i];
+                Console.Write(steamAppId.ToString().PadRight(DisplayCols[1], paddingChar));
+
+                if (!hook.LastKnownVersions.ContainsKey(steamAppId))
+                {
+                    hook.LastKnownVersions.Add(steamAppId, "0");
+                }
+
+                string steamVersion = GetSteamVersion(steamAppId);
+                string lastKnownVersion = hook.LastKnownVersions[steamAppId];
+
+                Console.Write(steamVersion.PadRight(DisplayCols[2], paddingChar));
+
+                if (lastKnownVersion == steamVersion)
+                {
+                    Console.Write(lastKnownVersion.PadRight(DisplayCols[3], paddingChar));
+                }
+                else
+                {
+                    Console.Write(lastKnownVersion.PadRight(DisplayCols[3], paddingChar), Color.Red);
+                    lastKnownVersion = hook.LastKnownVersions[steamAppId] = steamVersion;
+                    executeTriggers = true;
+                }
+
+                if (executeTriggers)
+                {
+                    Console.WriteLine("NOW".PadRight(DisplayCols[4], paddingChar), Color.Green);
+                }
+                else
+                {
+                    Console.WriteLine(hook.LastTriggered.ToString().PadRight(DisplayCols[4], paddingChar));
+                }
+            }
+
+            if (executeTriggers)
             {
                 hook.LastTriggered = DateTime.Now;
-                Console.WriteLine("JUST NOW".PadRight(20), Color.Green);
-
-                string json = JsonConvert.SerializeObject(triggerList);
-                File.WriteAllText(DataFile, json);
-            }
-            else
-            {
-                Console.WriteLine(hook.LastTriggered.ToString().PadRight(20));
+                foreach (ITrigger trigger in hook.Triggers)
+                {
+                    trigger.Execute();
+                }
             }
         }
 
@@ -220,19 +265,10 @@ namespace SteamReaction
         }
 
         /// <summary>Using Steam's API gets the current version of a steam package</summary>
-        /// <param name="hook"></param>
-        /// <returns>Current version of the steam package.</returns>
-        /// <throws>Exception</throws>
-        protected static int GetSteamVersion(SteamHook hook)
-        {
-            return GetSteamVersion(hook.SteamAppId);
-        }
-
-        /// <summary>Using Steam's API gets the current version of a steam package</summary>
         /// <param name="steamAppId">The AppID of the steam package.</param>
         /// <returns>Current version of the steam package.</returns>
         /// <throws>Exception</throws>
-        protected static int GetSteamVersion(int steamAppId)
+        protected static string GetSteamVersion(int steamAppId)
         {
             using (dynamic conn = WebAPI.GetInterface("ISteamApps"))
             {
@@ -240,7 +276,7 @@ namespace SteamReaction
 
                 if (response["success"].AsBoolean())
                 {
-                    return response["required_version"].AsInteger();
+                    return response["required_version"].AsString().ToLower().Trim();
                 }
                 else
                 {
