@@ -24,9 +24,9 @@ namespace SteamReaction
         /// <summary>Full path to "SteamReaction" executable.</summary>
         private static readonly string AppPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-        /// <summary></summary>
         private static readonly string DataFile = AppPath + Path.DirectorySeparatorChar + "SteamReaction.json";
 
+        /// <summary>Fold where static-data will be stored.</summary>
         private static readonly string DataFolder = AppPath + Path.DirectorySeparatorChar + "DataStore";
 
         /// <summary>Contains the text padding of the console-display columns.</summary>
@@ -38,7 +38,11 @@ namespace SteamReaction
         /// <summary>Number of seconds in the main loop.</summary>
         private static readonly int SettingMainLoopDelay = 4;
 
-        private static List<SteamReactor> WebHooks;
+        /// <summary>Collection of reactors to be process.</summary>
+        private static List<SteamReactor> reactors;
+
+        /// <summary>Collection of WebHooks to trigger in the event of an uncaught Exception.</summary>
+        private static List<IWebHook> crashOutWebHooks;
 
         /// <summary>The handle to the log file.</summary>
         private static StreamWriter logHandle;
@@ -48,15 +52,38 @@ namespace SteamReaction
         /// <returns>Windows Exit Code</returns>
         protected static int Main(string[] args)
         {
-            Debug.WriteLine("Main() called.");
+            // Add crash-out web hooks
+            {
+                if (crashOutWebHooks == null)
+                {
+                    crashOutWebHooks = new List<IWebHook>();
+                }
 
-            Console.SetWindowSize(120, 35);
+                crashOutWebHooks.Add(
+                        new Slack()
+                        {
+                            URL = "https://hooks.slack.com/services/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"
+                        });
+            }
 
-            WebHooks = BuildData.Builder();
+            try
+            {
+                Debug.WriteLine("Main() called.");
 
-            Directory.CreateDirectory(DataFolder);
+                Console.SetWindowSize(120, 35);
 
-            return MonitorSteamAPI();
+                reactors = BuildData.Builder();
+
+                Directory.CreateDirectory(DataFolder);
+
+                return MonitorSteamAPI();
+            }
+            catch (Exception)
+            {
+                ExecuteWebHooks(crashOutWebHooks);
+
+                return 1;
+            }
 
             return 0;
         }
@@ -65,7 +92,7 @@ namespace SteamReaction
         /// <returns>Windows Exit Code</returns>
         protected static int MonitorSteamAPI()
         {
-            if (WebHooks == null || WebHooks.Count < 1)
+            if (reactors == null || reactors.Count < 1)
             {
                 System.Console.WriteLine("No triggers defined - nothing to do.");
                 return 0;
@@ -91,15 +118,15 @@ namespace SteamReaction
                         string jsonAfter, jsonBefore = string.Empty;
 
                         // Don't use foreach as we want to pass by reference (and not a read-only copy)
-                        for (int i = 0; i < WebHooks.Count; i++)
+                        for (int i = 0; i < reactors.Count; i++)
                         {
-                            Array.Sort(WebHooks[i].SteamAppIds);
+                            Array.Sort(reactors[i].SteamAppIds);
 
-                            jsonBefore = JsonConvert.SerializeObject(WebHooks[i]);
+                            jsonBefore = JsonConvert.SerializeObject(reactors[i]);
 
-                            CheckHook(WebHooks[i]);
+                            ProcessReactor(reactors[i]);
 
-                            jsonAfter = JsonConvert.SerializeObject(WebHooks[i]);
+                            jsonAfter = JsonConvert.SerializeObject(reactors[i]);
 
                             if (jsonAfter != jsonBefore)
                             {
@@ -107,9 +134,9 @@ namespace SteamReaction
                                 // run trigger
                             }
 
-                            if (i + 1 < WebHooks.Count)
+                            if (i + 1 < reactors.Count)
                             {
-                                ConsoleCountdown(("Querying for `" + WebHooks[i + 1].Name).Truncate(60, "..") + "` in", 9, 21, true);
+                                ConsoleCountdown(("Querying for `" + reactors[i + 1].Name).Truncate(60, "..") + "` in", 9, 21, true);
                             }
                         }
                     }
@@ -190,16 +217,18 @@ namespace SteamReaction
             Thread.Sleep(r.Next(1, 350));
         }
 
-        protected static void CheckHook(SteamReactor hook)
+        /// <summary>Checks a reactor for a reaction</summary>
+        /// <param name="reactor">Reactor to check.</param>
+        protected static void ProcessReactor(SteamReactor reactor)
         {
-            if (hook.LastKnownVersions == null)
+            if (reactor.LastKnownVersions == null)
             {
-                hook.LastKnownVersions = new Dictionary<int, string>();
+                reactor.LastKnownVersions = new Dictionary<int, string>();
             }
 
             bool shouldExecuteWebHooks = false;
 
-            for (int i = 0; i < hook.SteamAppIds.Length; i++)
+            for (int i = 0; i < reactor.SteamAppIds.Length; i++)
             {
                 char paddingChar;
 
@@ -207,7 +236,7 @@ namespace SteamReaction
                 {
                     paddingChar = '·';
 
-                    Console.Write(hook.Name.Truncate(DisplayCols[0] - 2, "..").PadRight(DisplayCols[0], paddingChar));
+                    Console.Write(reactor.Name.Truncate(DisplayCols[0] - 2, "..").PadRight(DisplayCols[0], paddingChar));
                 }
                 else
                 {
@@ -216,16 +245,16 @@ namespace SteamReaction
                     Console.Write(string.Empty.PadRight(DisplayCols[0], paddingChar));
                 }
 
-                int steamAppId = hook.SteamAppIds[i];
+                int steamAppId = reactor.SteamAppIds[i];
                 Console.Write(steamAppId.ToString().PadRight(DisplayCols[1], paddingChar));
 
-                if (!hook.LastKnownVersions.ContainsKey(steamAppId))
+                if (!reactor.LastKnownVersions.ContainsKey(steamAppId))
                 {
-                    hook.LastKnownVersions.Add(steamAppId, "0");
+                    reactor.LastKnownVersions.Add(steamAppId, "0");
                 }
 
                 string steamVersion = GetSteamVersion(steamAppId);
-                string lastKnownVersion = hook.LastKnownVersions[steamAppId];
+                string lastKnownVersion = reactor.LastKnownVersions[steamAppId];
 
                 Console.Write(steamVersion.PadRight(DisplayCols[2], paddingChar));
 
@@ -236,7 +265,7 @@ namespace SteamReaction
                 else
                 {
                     Console.Write(lastKnownVersion.PadRight(DisplayCols[3], paddingChar), Color.Red);
-                    lastKnownVersion = hook.LastKnownVersions[steamAppId] = steamVersion;
+                    lastKnownVersion = reactor.LastKnownVersions[steamAppId] = steamVersion;
                     shouldExecuteWebHooks = true;
                 }
 
@@ -246,17 +275,34 @@ namespace SteamReaction
                 }
                 else
                 {
-                    Console.WriteLine(hook.LastTriggered.ToString().PadRight(DisplayCols[4], paddingChar));
+                    Console.WriteLine(reactor.LastTriggered.ToString().PadRight(DisplayCols[4], paddingChar));
                 }
             }
 
             if (shouldExecuteWebHooks)
             {
-                hook.LastTriggered = DateTime.Now;
-                foreach (IWebHook webHook in hook.WebHooks)
+                reactor.LastTriggered = DateTime.Now;
+                ExecuteWebHooks(reactor.WebHooks);
+            }
+        }
+
+        /// <summary>Executes all web hooks in a collection</summary>
+        /// <param name="webHooks">Collection of WebHooks to Execute</param>
+        protected static void ExecuteWebHooks(List<IWebHook> webHooks)
+        {
+            if (webHooks == null)
+            {
+                //todo
+            }
+
+            foreach (IWebHook webHook in webHooks)
+            {
+                if (webHook == null)
                 {
-                    webHook.Execute();
+                    //todo
                 }
+
+                webHook.Execute();
             }
         }
 
