@@ -3,14 +3,14 @@
 //     Applicable rights reserved
 // </copyright>
 //-----------------------------------------------------------------------
-namespace SteamReaction.Triggers
+namespace SteamReaction.WebHooks
 {
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Net.Http;
 
     /// <summary>Trigger for Docker Hub.</summary>
-    public class DockerHub : ITrigger
+    public class DockerHub : IWebHook
     {
         /// <summary>Gets the HTTP request header Content-Type.</summary>
         public string ContentType { get; } = "Content-Type: application/json";

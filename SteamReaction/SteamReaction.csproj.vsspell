@@ -6,11 +6,15 @@
   <SelectedLanguages />
   <InheritIgnoredWords>True</InheritIgnoredWords>
   <IgnoredWords>
+    <Ignore>appid</Ignore>
+    <Ignore>appsvr</Ignore>
     <Ignore>blackmesa</Ignore>
     <Ignore>csgo</Ignore>
+    <Ignore>deathmatch</Ignore>
     <Ignore>Docker</Ignore>
     <Ignore>dods</Ignore>
     <Ignore>foreach</Ignore>
+    <Ignore>gamesvr</Ignore>
     <Ignore>garrysmod</Ignore>
     <Ignore>goldsource</Ignore>
     <Ignore>llgameserverbot</Ignore>
@@ -20,7 +24,7 @@
     <Ignore>username</Ignore>
     <Ignore>webhook</Ignore>
     <Ignore>webhooks</Ignore>
-    <Ignore>deathmatch</Ignore>
+    <Ignore>apps</Ignore>
   </IgnoredWords>
   <InheritExclusionExpressions>True</InheritExclusionExpressions>
   <InheritIgnoredFilePatterns>True</InheritIgnoredFilePatterns>

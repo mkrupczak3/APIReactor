@@ -14,7 +14,8 @@ namespace SteamReaction
     using System.Threading;
     using Newtonsoft.Json;
     using SteamKit2;
-    using SteamReaction.Triggers;
+    using SteamReaction.Reactor;
+    using SteamReaction.WebHooks;
     using Console = Colorful.Console;
 
     /// <summary>Main entry point of application.</summary>
@@ -26,6 +27,8 @@ namespace SteamReaction
         /// <summary></summary>
         private static readonly string DataFile = AppPath + Path.DirectorySeparatorChar + "SteamReaction.json";
 
+        private static readonly string DataFolder = AppPath + Path.DirectorySeparatorChar + "DataStore";
+
         /// <summary>Contains the text padding of the console-display columns.</summary>
         private static readonly byte[] DisplayCols = { 48, 12, 18, 18, 22 };
 
@@ -35,7 +38,7 @@ namespace SteamReaction
         /// <summary>Number of seconds in the main loop.</summary>
         private static readonly int SettingMainLoopDelay = 4;
 
-        private static List<SteamHook> triggerList;
+        private static List<SteamReactor> WebHooks;
 
         /// <summary>The handle to the log file.</summary>
         private static StreamWriter logHandle;
@@ -49,7 +52,9 @@ namespace SteamReaction
 
             Console.SetWindowSize(120, 35);
 
-            triggerList = BuildData.Builder();
+            WebHooks = BuildData.Builder();
+
+            Directory.CreateDirectory(DataFolder);
 
             return MonitorSteamAPI();
 
@@ -60,7 +65,7 @@ namespace SteamReaction
         /// <returns>Windows Exit Code</returns>
         protected static int MonitorSteamAPI()
         {
-            if (triggerList == null || triggerList.Count < 1)
+            if (WebHooks == null || WebHooks.Count < 1)
             {
                 System.Console.WriteLine("No triggers defined - nothing to do.");
                 return 0;
@@ -86,15 +91,15 @@ namespace SteamReaction
                         string jsonAfter, jsonBefore = string.Empty;
 
                         // Don't use foreach as we want to pass by reference (and not a read-only copy)
-                        for (int i = 0; i < triggerList.Count; i++)
+                        for (int i = 0; i < WebHooks.Count; i++)
                         {
-                            Array.Sort(triggerList[i].SteamAppIds);
+                            Array.Sort(WebHooks[i].SteamAppIds);
 
-                            jsonBefore = JsonConvert.SerializeObject(triggerList[i]);
+                            jsonBefore = JsonConvert.SerializeObject(WebHooks[i]);
 
-                            CheckHook(triggerList[i]);
+                            CheckHook(WebHooks[i]);
 
-                            jsonAfter = JsonConvert.SerializeObject(triggerList[i]);
+                            jsonAfter = JsonConvert.SerializeObject(WebHooks[i]);
 
                             if (jsonAfter != jsonBefore)
                             {
@@ -102,9 +107,9 @@ namespace SteamReaction
                                 // run trigger
                             }
 
-                            if (i + 1 < triggerList.Count)
+                            if (i + 1 < WebHooks.Count)
                             {
-                                ConsoleCountdown(("Querying for `" + triggerList[i + 1].Name).Truncate(60, "..") + "` in", 9, 21, true);
+                                ConsoleCountdown(("Querying for `" + WebHooks[i + 1].Name).Truncate(60, "..") + "` in", 9, 21, true);
                             }
                         }
                     }
@@ -185,14 +190,14 @@ namespace SteamReaction
             Thread.Sleep(r.Next(1, 350));
         }
 
-        protected static void CheckHook(SteamHook hook)
+        protected static void CheckHook(SteamReactor hook)
         {
             if (hook.LastKnownVersions == null)
             {
                 hook.LastKnownVersions = new Dictionary<int, string>();
             }
 
-            bool executeTriggers = false;
+            bool shouldExecuteWebHooks = false;
 
             for (int i = 0; i < hook.SteamAppIds.Length; i++)
             {
@@ -232,10 +237,10 @@ namespace SteamReaction
                 {
                     Console.Write(lastKnownVersion.PadRight(DisplayCols[3], paddingChar), Color.Red);
                     lastKnownVersion = hook.LastKnownVersions[steamAppId] = steamVersion;
-                    executeTriggers = true;
+                    shouldExecuteWebHooks = true;
                 }
 
-                if (executeTriggers)
+                if (shouldExecuteWebHooks)
                 {
                     Console.WriteLine("NOW".PadRight(DisplayCols[4], paddingChar), Color.Green);
                 }
@@ -245,12 +250,12 @@ namespace SteamReaction
                 }
             }
 
-            if (executeTriggers)
+            if (shouldExecuteWebHooks)
             {
                 hook.LastTriggered = DateTime.Now;
-                foreach (ITrigger trigger in hook.Triggers)
+                foreach (IWebHook webHook in hook.WebHooks)
                 {
-                    trigger.Execute();
+                    webHook.Execute();
                 }
             }
         }
@@ -262,6 +267,22 @@ namespace SteamReaction
             Console.SetCursorPosition(0, Console.CursorTop);
             Console.Write(new string(' ', Console.WindowWidth));
             Console.SetCursorPosition(0, currentLineCursor);
+        }
+
+        protected static void BuildSteamAppList(string filename)
+        {
+            using (dynamic conn = WebAPI.GetInterface("ISteamApps"))
+            {
+                KeyValue response = conn.GetAppList2();
+                List<KeyValue> z = response["apps"].Children;
+
+                Dictionary<int, string> t = new Dictionary<int, string>();
+
+                foreach (var item in z)
+                {
+                    t.Add(item["appid"].AsInteger(), item["name"].AsString());
+                }
+            }
         }
 
         /// <summary>Using Steam's API gets the current version of a steam package</summary>

@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction.Triggers
+namespace SteamReaction.WebHooks
 {
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -12,7 +12,7 @@ namespace SteamReaction.Triggers
     using Newtonsoft.Json;
 
     /// <summary>Trigger for SLACK (incoming webhooks)</summary>
-    public class Slack : ITrigger
+    public class Slack : IWebHook
     {
         /// <summary>Gets the HTTP request header Content-Type.</summary>
         public string ContentType { get; }
@@ -26,22 +26,27 @@ namespace SteamReaction.Triggers
         /// <summary>Gets or sets the URL of the trigger.</summary>
         public string URL { get; set; }
 
-        static public string BuildData(string message, string username = "SteamReaction", string iconEmoji = ":docker:", string url = "")
+        static public string BuildData(string channel, string message, string username = "SteamReaction", string iconEmoji = ":robot_face:")
         {
             Dictionary<string, string> test = new Dictionary<string, string>()
             {
+                { "channel", channel },
                 { "icon_emoji", iconEmoji },
                 { "text", message },
                 { "username", username }
             };
 
-            if (!string.IsNullOrWhiteSpace(url))
+            return JsonConvert.SerializeObject(test);
+        }
+
+        static public string EncodeURL(string url, string text = "")
+        {
+            if (string.IsNullOrWhiteSpace(text))
             {
-                Debug.WriteLine("a");
-                test["text"] += "\n" + url;
+                text = url;
             }
 
-            return JsonConvert.SerializeObject(test);
+            return "<" + url + "|" + text + ">";
         }
 
         /// <summary>Executes the trigger.</summary>
@@ -49,8 +54,6 @@ namespace SteamReaction.Triggers
         {
             using (var client = new HttpClient())
             {
-                Debug.WriteLine("--=> " + this.Data);
-
                 var data = new FormUrlEncodedContent(new Dictionary<string, string>() { { "payload", this.Data } });
                 var response = client.PostAsync(this.URL, data).Result;
 

@@ -82,10 +82,11 @@
   <ItemGroup>
     <Compile Include="BuildData.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="models\SteamHook.cs" />
-    <Compile Include="models\Triggers\DockerHub.cs" />
-    <Compile Include="models\Triggers\ITrigger.cs" />
-    <Compile Include="models\Triggers\Slack.cs" />
+    <Compile Include="Models\Reactor\IReactor.cs" />
+    <Compile Include="Models\Reactor\SteamReactor.cs" />
+    <Compile Include="Models\WebHooks\DockerHub.cs" />
+    <Compile Include="Models\WebHooks\IWebHook.cs" />
+    <Compile Include="Models\WebHooks\Slack.cs" />
     <Compile Include="Program.cs">
       <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
     </Compile>

@@ -1,13 +1,13 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ITrigger.cs" company="Laclede's LAN">
+// <copyright file="IWebHooks.cs" company="Laclede's LAN">
 //     Applicable rights reserved
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction.Triggers
+namespace SteamReaction.WebHooks
 {
     /// <summary>Interface representing a trigger.</summary>
-    public interface ITrigger
+    public interface IWebHook
     {
         /// <summary>Gets the HTTP request header Content-Type.</summary>
         string ContentType { get; }
