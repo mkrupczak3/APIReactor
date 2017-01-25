@@ -62,7 +62,7 @@ namespace SteamReaction
                 crashOutWebHooks.Add(
                         new Slack()
                         {
-                            URL = "https://hooks.slack.com/services/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"
+                            URL = "https://hooks.slack.com/services/XXXXXXXXX/ZZZZZZZZZZZZZZZZZ"
                         });
             }
 
