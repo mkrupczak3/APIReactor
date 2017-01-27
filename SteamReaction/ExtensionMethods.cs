@@ -14,7 +14,7 @@ namespace SteamReaction
         /// <param name="maxLength">The maximum length of the string after truncation.</param>
         /// <param name="trailingAnnotationText">Trailing text annotation (if any) to indicate that the string has been truncated (e.g. "...").</param>
         /// <returns>The truncated string.</returns>
-        public static string Truncate(this string str, int maxLength, string trailingAnnotationText = null)
+        public static string Truncate(this string str, int maxLength, string trailingAnnotationText = "...")
         {
             if (str.Length > maxLength)
             {

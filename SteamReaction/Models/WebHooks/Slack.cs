@@ -6,12 +6,13 @@
 
 namespace SteamReaction.WebHooks
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Net.Http;
     using Newtonsoft.Json;
 
-    /// <summary>Trigger for SLACK (incoming webhooks)</summary>
+    /// <summary>Trigger for SLACK (incoming web-hooks)</summary>
     public class Slack : IWebHook
     {
         /// <summary>Gets the HTTP request header Content-Type.</summary>
@@ -26,6 +27,12 @@ namespace SteamReaction.WebHooks
         /// <summary>Gets or sets the URL of the trigger.</summary>
         public string URL { get; set; }
 
+        /// <summary></summary>
+        /// <param name="channel"></param>
+        /// <param name="message"></param>
+        /// <param name="username"></param>
+        /// <param name="iconEmoji"></param>
+        /// <returns></returns>
         static public string BuildData(string channel, string message, string username = "SteamReaction", string iconEmoji = ":robot_face:")
         {
             Dictionary<string, string> test = new Dictionary<string, string>()
@@ -47,6 +54,28 @@ namespace SteamReaction.WebHooks
             }
 
             return "<" + url + "|" + text + ">";
+        }
+
+        /// <summary></summary>
+        /// <param name="ex"></param>
+        /// <param name="url"></param>
+        /// <param name="channel"></param>
+        /// <returns></returns>
+        static public Slack FromException(Exception ex, string url, string channel = "")
+        {
+            return new WebHooks.Slack()
+            {
+                URL = url,
+                Data = Slack.BuildData(
+                    channel: channel,
+                    iconEmoji: ":bug:",
+                    username: "SteamReaction Bug",
+                    message: ":fire: :fire: Hey @dudley - SteamReaction has crashed! :fire: :fire: \n"
+                        + ":fire: Message: " + ex.Message + "\n"
+                        + ":fire: Source" + ex.Source + "\n"
+                        + ":fire: Stack Trace" + ex.StackTrace
+                    )
+            };
         }
 
         /// <summary>Executes the trigger.</summary>

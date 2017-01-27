@@ -13,8 +13,6 @@ namespace SteamReaction
     using System.IO;
     using System.Threading;
     using Newtonsoft.Json;
-    using SteamKit2;
-    using SteamReaction.Reactor;
     using SteamReaction.WebHooks;
     using Console = Colorful.Console;
 
@@ -29,17 +27,14 @@ namespace SteamReaction
         /// <summary>Fold where static-data will be stored.</summary>
         private static readonly string DataFolder = AppPath + Path.DirectorySeparatorChar + "DataStore";
 
-        /// <summary>Contains the text padding of the console-display columns.</summary>
-        private static readonly byte[] DisplayCols = { 48, 12, 18, 18, 22 };
-
         /// <summary>Full path to log file.</summary>
         private static readonly string LogFile = AppPath + Path.DirectorySeparatorChar + "SteamReaction.log";
 
         /// <summary>Number of seconds in the main loop.</summary>
-        private static readonly int SettingMainLoopDelay = 4;
+        private static readonly int SettingMainLoopDelay = 240;
 
         /// <summary>Collection of reactors to be process.</summary>
-        private static List<SteamReactor> reactors;
+        private static List<Reactor> reactors;
 
         /// <summary>Collection of WebHooks to trigger in the event of an uncaught Exception.</summary>
         private static List<IWebHook> crashOutWebHooks;
@@ -52,98 +47,56 @@ namespace SteamReaction
         /// <returns>Windows Exit Code</returns>
         protected static int Main(string[] args)
         {
-            // Add crash-out web hooks
-            {
-                if (crashOutWebHooks == null)
-                {
-                    crashOutWebHooks = new List<IWebHook>();
-                }
+            crashOutWebHooks = BuildData.BuildCrashOutWebHooks();
 
-                crashOutWebHooks.Add(
-                        new Slack()
-                        {
-                            URL = "https://hooks.slack.com/services/XXXXXXXXX/ZZZZZZZZZZZZZZZZZ"
-                        });
-            }
+            System.Console.WriteLine("START");
+            Console.ReadKey();
 
             try
             {
                 Debug.WriteLine("Main() called.");
 
-                Console.SetWindowSize(120, 35);
-
-                reactors = BuildData.Builder();
-
                 Directory.CreateDirectory(DataFolder);
 
-                return MonitorSteamAPI();
-            }
-            catch (Exception)
-            {
-                ExecuteWebHooks(crashOutWebHooks);
+                Console.SetWindowSize(120, 35);
 
-                return 1;
-            }
-
-            return 0;
-        }
-
-        /// <summary>Monitors steam via it's web API.</summary>
-        /// <returns>Windows Exit Code</returns>
-        protected static int MonitorSteamAPI()
-        {
-            if (reactors == null || reactors.Count < 1)
-            {
-                System.Console.WriteLine("No triggers defined - nothing to do.");
-                return 0;
-            }
-
-            using (logHandle = File.AppendText(LogFile))
-            {
-                Log(2, "Starting");
+                reactors = BuildData.BuildReactor();
 
                 while (true)
                 {
                     Console.Clear();
                     Console.WriteLine(DateTime.Now.ToString(), Color.DarkGray);
                     Console.WriteAscii(" Steam Reaction");
-                    Console.Write("[Name]".PadRight(DisplayCols[0]));
-                    Console.Write("[AppId]".PadRight(DisplayCols[1]));
-                    Console.Write("[Steam Version]".PadRight(DisplayCols[2]));
-                    Console.Write("[Current Version]".PadRight(DisplayCols[3]));
-                    Console.WriteLine("[Last Triggered]".PadRight(DisplayCols[4]));
-
-                    // UPDATE LOOP
-                    {
-                        string jsonAfter, jsonBefore = string.Empty;
-
-                        // Don't use foreach as we want to pass by reference (and not a read-only copy)
-                        for (int i = 0; i < reactors.Count; i++)
-                        {
-                            Array.Sort(reactors[i].SteamAppIds);
-
-                            jsonBefore = JsonConvert.SerializeObject(reactors[i]);
-
-                            ProcessReactor(reactors[i]);
-
-                            jsonAfter = JsonConvert.SerializeObject(reactors[i]);
-
-                            if (jsonAfter != jsonBefore)
-                            {
-                                // write updated file
-                                // run trigger
-                            }
-
-                            if (i + 1 < reactors.Count)
-                            {
-                                ConsoleCountdown(("Querying for `" + reactors[i + 1].Name).Truncate(60, "..") + "` in", 9, 21, true);
-                            }
-                        }
-                    }
-
+                    MonitorReactors(reactors);
                     Console.WriteLine();
-                    ConsoleCountdown("Re-running all checks in", SettingMainLoopDelay);
+                    ConsoleCountdown("Re-running all queries in", SettingMainLoopDelay, true);
                 }
+            }
+            catch (Exception)
+            {
+                Reactor.ExecuteWebHooks(crashOutWebHooks);
+
+                return 1;
+            }
+
+            System.Console.WriteLine("END");
+            Console.ReadKey();
+
+            return 0;
+        }
+
+        protected static void MonitorReactors(List<Reactor> reactors)
+        {
+            if (reactors != null)
+            {
+                for (int i = 0; i < reactors.Count; i++)
+                {
+                    reactors[i].Start();
+                }
+            }
+            else
+            {
+                Console.WriteLine("No reactors to monitor.");
             }
         }
 
@@ -178,7 +131,7 @@ namespace SteamReaction
         /// <param name="msg">Message to display during the countdown (appended to the current number of seconds left).</param>
         /// <param name="numberOfSeconds">Number of seconds to wait.</param>
         /// <param name="darkenColor">If true, countdown message text color will be darkened.</param>
-        protected static void ConsoleCountdown(string msg, int numberOfSeconds, bool darkenColor = false)
+        public static void ConsoleCountdown(string msg, int numberOfSeconds, bool darkenColor = false)
         {
             ConsoleCountdown(msg, numberOfSeconds, numberOfSeconds, darkenColor);
         }
@@ -217,95 +170,6 @@ namespace SteamReaction
             Thread.Sleep(r.Next(1, 350));
         }
 
-        /// <summary>Checks a reactor for a reaction</summary>
-        /// <param name="reactor">Reactor to check.</param>
-        protected static void ProcessReactor(SteamReactor reactor)
-        {
-            if (reactor.LastKnownVersions == null)
-            {
-                reactor.LastKnownVersions = new Dictionary<int, string>();
-            }
-
-            bool shouldExecuteWebHooks = false;
-
-            for (int i = 0; i < reactor.SteamAppIds.Length; i++)
-            {
-                char paddingChar;
-
-                if (i == 0)
-                {
-                    paddingChar = '·';
-
-                    Console.Write(reactor.Name.Truncate(DisplayCols[0] - 2, "..").PadRight(DisplayCols[0], paddingChar));
-                }
-                else
-                {
-                    paddingChar = ' ';
-                    ConsoleCountdown(string.Empty.PadRight(DisplayCols[0]) + "Querying in", 2, 4, true);
-                    Console.Write(string.Empty.PadRight(DisplayCols[0], paddingChar));
-                }
-
-                int steamAppId = reactor.SteamAppIds[i];
-                Console.Write(steamAppId.ToString().PadRight(DisplayCols[1], paddingChar));
-
-                if (!reactor.LastKnownVersions.ContainsKey(steamAppId))
-                {
-                    reactor.LastKnownVersions.Add(steamAppId, "0");
-                }
-
-                string steamVersion = GetSteamVersion(steamAppId);
-                string lastKnownVersion = reactor.LastKnownVersions[steamAppId];
-
-                Console.Write(steamVersion.PadRight(DisplayCols[2], paddingChar));
-
-                if (lastKnownVersion == steamVersion)
-                {
-                    Console.Write(lastKnownVersion.PadRight(DisplayCols[3], paddingChar));
-                }
-                else
-                {
-                    Console.Write(lastKnownVersion.PadRight(DisplayCols[3], paddingChar), Color.Red);
-                    lastKnownVersion = reactor.LastKnownVersions[steamAppId] = steamVersion;
-                    shouldExecuteWebHooks = true;
-                }
-
-                if (shouldExecuteWebHooks)
-                {
-                    Console.WriteLine("NOW".PadRight(DisplayCols[4], paddingChar), Color.Green);
-                }
-                else
-                {
-                    Console.WriteLine(reactor.LastTriggered.ToString().PadRight(DisplayCols[4], paddingChar));
-                }
-            }
-
-            if (shouldExecuteWebHooks)
-            {
-                reactor.LastTriggered = DateTime.Now;
-                ExecuteWebHooks(reactor.WebHooks);
-            }
-        }
-
-        /// <summary>Executes all web hooks in a collection</summary>
-        /// <param name="webHooks">Collection of WebHooks to Execute</param>
-        protected static void ExecuteWebHooks(List<IWebHook> webHooks)
-        {
-            if (webHooks == null)
-            {
-                //todo
-            }
-
-            foreach (IWebHook webHook in webHooks)
-            {
-                if (webHook == null)
-                {
-                    //todo
-                }
-
-                webHook.Execute();
-            }
-        }
-
         /// <summary>Clears the current line of the console and returns the cursor to the home position.</summary>
         protected static void ConsoleClearLine()
         {
@@ -315,45 +179,24 @@ namespace SteamReaction
             Console.SetCursorPosition(0, currentLineCursor);
         }
 
-        protected static void BuildSteamAppList(string filename)
+        internal static void ConsolePrintLine(string reactorName, string triggerName, bool triggerActivated, string triggerCurrentCheckInfo, char paddingChar = ' ')
         {
-            using (dynamic conn = WebAPI.GetInterface("ISteamApps"))
+            byte[] colPos = { 40, 18, 13, 48 };
+
+            string actionTaken = (triggerActivated) ? "[ACTIVATED]": string.Empty;
+
+            Console.Write(reactorName.Truncate(colPos[0]).PadRight(colPos[0], paddingChar));
+            Console.Write(triggerName.Truncate(colPos[1]).PadRight(colPos[1], paddingChar));
+
+            if (triggerActivated)
             {
-                KeyValue response = conn.GetAppList2();
-                List<KeyValue> z = response["apps"].Children;
-
-                Dictionary<int, string> t = new Dictionary<int, string>();
-
-                foreach (var item in z)
-                {
-                    t.Add(item["appid"].AsInteger(), item["name"].AsString());
-                }
+                Console.Write(actionTaken.Truncate(colPos[2]).PadRight(colPos[2], paddingChar), Color.Red);
+                Console.WriteLine(triggerCurrentCheckInfo.Truncate(colPos[3]).PadRight(colPos[3], paddingChar), Color.Green);
             }
-        }
-
-        /// <summary>Using Steam's API gets the current version of a steam package</summary>
-        /// <param name="steamAppId">The AppID of the steam package.</param>
-        /// <returns>Current version of the steam package.</returns>
-        /// <throws>Exception</throws>
-        protected static string GetSteamVersion(int steamAppId)
-        {
-            using (dynamic conn = WebAPI.GetInterface("ISteamApps"))
+            else
             {
-                KeyValue response = conn.UpToDateCheck1(appid: steamAppId, version: 0);
-
-                if (response["success"].AsBoolean())
-                {
-                    return response["required_version"].AsString().ToLower().Trim();
-                }
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(response["error"].AsString()))
-                    {
-                        throw new Exception("SteamAPI failed to return version information.");
-                    }
-
-                    throw new Exception(response["error"].AsString());
-                }
+                Console.Write(actionTaken.Truncate(colPos[2]).PadRight(colPos[2], paddingChar));
+                Console.WriteLine(triggerCurrentCheckInfo.Truncate(colPos[3]).PadRight(colPos[3], paddingChar));
             }
         }
     }

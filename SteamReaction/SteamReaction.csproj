@@ -82,8 +82,9 @@
   <ItemGroup>
     <Compile Include="BuildData.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Models\Reactor\IReactor.cs" />
-    <Compile Include="Models\Reactor\SteamReactor.cs" />
+    <Compile Include="Models\Reactor.cs" />
+    <Compile Include="Models\Triggers\ITrigger.cs" />
+    <Compile Include="Models\Triggers\SteamAppUpdate.cs" />
     <Compile Include="Models\WebHooks\DockerHub.cs" />
     <Compile Include="Models\WebHooks\IWebHook.cs" />
     <Compile Include="Models\WebHooks\Slack.cs" />
@@ -112,6 +113,7 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
