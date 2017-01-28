@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="DockerHub.cs" company="Laclede's LAN">
+// <copyright file="DockerHub.cs" company="n/a">
 //     Applicable rights reserved
 // </copyright>
 //-----------------------------------------------------------------------
@@ -27,7 +27,6 @@ namespace SteamReaction.WebHooks
         /// <summary>Executes the trigger.</summary>
         public void Execute()
         {
-            return;
             using (var client = new HttpClient())
             {
                 var data = new FormUrlEncodedContent(new Dictionary<string, string>() { { "data", this.Data } });

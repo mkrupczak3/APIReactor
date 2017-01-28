@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IWebHooks.cs" company="Laclede's LAN">
+// <copyright file="IWebHook.cs" company="n/a">
 //     Applicable rights reserved
 // </copyright>
 //-----------------------------------------------------------------------

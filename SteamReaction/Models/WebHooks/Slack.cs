@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="Slack.cs" company="Laclede's LAN">
+// <copyright file="Slack.cs" company="n/a">
 //     Applicable rights reserved
 // </copyright>
 //-----------------------------------------------------------------------
@@ -33,7 +33,7 @@ namespace SteamReaction.WebHooks
         /// <param name="username"></param>
         /// <param name="iconEmoji"></param>
         /// <returns></returns>
-        static public string BuildData(string channel, string message, string username = "SteamReaction", string iconEmoji = ":robot_face:")
+        static public string BuildData(string channel, string message, string username = "SteamReaction", string iconEmoji = ":zbot:")
         {
             Dictionary<string, string> test = new Dictionary<string, string>()
             {
@@ -46,6 +46,10 @@ namespace SteamReaction.WebHooks
             return JsonConvert.SerializeObject(test);
         }
 
+        /// <summary>Encodes a URL into a SLACK-compatible format.</summary>
+        /// <param name="url">URL to encode.</param>
+        /// <param name="text">(optional) Text to describe the URL.</param>
+        /// <returns>The encoded URL.</returns>
         static public string EncodeURL(string url, string text = "")
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -68,14 +72,13 @@ namespace SteamReaction.WebHooks
                 URL = url,
                 Data = Slack.BuildData(
                     channel: channel,
-                    iconEmoji: ":bug:",
+                    iconEmoji: ":zbot-fire:",
                     username: "SteamReaction Bug",
                     message: ":fire: :fire: Hey @dudley - SteamReaction has crashed! :fire: :fire: \n"
                         + ":fire: Message: " + ex.Message + "\n"
                         + ":fire: Source" + ex.Source + "\n"
                         + ":fire: Stack Trace" + ex.StackTrace
-                    )
-            };
+                )};
         }
 
         /// <summary>Executes the trigger.</summary>

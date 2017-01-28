@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="Reactor.cs" company="Laclede's LAN">
+// <copyright file="Reactor.cs" company="n/a">
 //     Applicable rights reserved
 // </copyright>
 //-----------------------------------------------------------------------
@@ -8,6 +8,7 @@ namespace SteamReaction
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using SteamReaction.Triggers;
     using SteamReaction.WebHooks;
 
@@ -29,6 +30,7 @@ namespace SteamReaction
         /// <summary>Gets or sets the collection of WebHooks to execute when triggered.</summary>
         public List<IWebHook> WebHooks { get; set; } = null;
 
+        /// <summary>Start the reactor; checking all triggers for activations and (if applicable) executing all Web Hooks.</summary>
         public void Start()
         {
             try
@@ -38,7 +40,7 @@ namespace SteamReaction
                     Reactor.ExecuteWebHooks(this.WebHooks);
                 }
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
                 if (this.ExceptionWebHooks != null && this.ExceptionWebHooks.Count > 0)
                 {
@@ -48,11 +50,34 @@ namespace SteamReaction
                 else
                 {
                     Console.WriteLine("Exception went uncaught in Reactor.Start()");
-                    throw Ex;
+                    throw ex;
                 }
             }
         }
 
+        /// <summary>Executes all passed Web Hooks</summary>
+        /// <param name="webHooks">Collection of Web Hooks to Execute</param>
+        internal static void ExecuteWebHooks(List<IWebHook> webHooks)
+        {
+            if (webHooks != null && webHooks.Count > 0)
+            {
+                for (int i = 0; i < webHooks.Count; i++)
+                {
+                    if (Program.DevDisableWebHooks)
+                    {
+                        Debug.WriteLine("Skipping web-hook: " + webHooks[i].GetType().Name);
+                    }
+                    else
+                    {
+                        webHooks[i].Execute();
+                    }
+                }
+            }
+        }
+
+        /// <summary>Checks all triggers in a collection for activations.</summary>
+        /// <param name="triggers">Collection of triggers to check.</param>
+        /// <returns>True if one or more triggers activated; otherwise false.</returns>
         internal bool CheckTriggers(List<ITrigger> triggers)
         {
             int triggersActivated = 0;
@@ -70,26 +95,15 @@ namespace SteamReaction
 
                 if (i == 0)
                 {
-                    Program.ConsolePrintLine(this.Name, triggers[i].description, result, triggers[i].CurrentCheckInfo, '·');
+                    Terminal.PrintLine(this.Name, triggers[i].Description, result, triggers[i].CurrentCheckInfo, '·');
                 }
                 else
                 {
-                    Program.ConsolePrintLine("", triggers[i].description, result, triggers[i].CurrentCheckInfo);
+                    Terminal.PrintLine(string.Empty, triggers[i].Description, result, triggers[i].CurrentCheckInfo);
                 }
             }
 
             return returnResult;
-        }
-
-        internal static void ExecuteWebHooks(List<IWebHook> webHooks)
-        {
-            if (webHooks != null && webHooks.Count > 0)
-            {
-                for (int i = 0; i < webHooks.Count; i++)
-                {
-                    webHooks[i].Execute();
-                }
-            }
         }
     }
 }
