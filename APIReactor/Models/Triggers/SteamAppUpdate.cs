@@ -9,51 +9,40 @@ namespace APIReactor.Triggers
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using APIReactor;
     using Newtonsoft.Json;
     using SteamKit2;
-    using APIReactor;
 
-    /// <summary>Activates whenever </summary>
-    internal class SteamAppUpdate : ITrigger
+    /// <summary>Activates whenever a specified application on Steam gets updated.</summary>
+    internal class SteamAppUpdate : Trigger
     {
-        public string APIName { get; } = "valve:steam";
+        /// <summary>The Steam Application ID to check for updates.</summary>
+        private int steamAppId = 0;
 
-        /// <summary>Gets a human-readable description of what this trigger is about.</summary>
-        public string Description
+        /// <summary>Initializes a new instance of the <see cref="SteamAppUpdate"/> class.</summary>
+        internal SteamAppUpdate()
+        {
+            this.APIName = "valve:steam";
+        }
+
+        /// <summary>Gets or sets the Steam Application ID to check for updates.</summary>
+        public int SteamAppId
         {
             get
             {
-                return "App ID: " + this.SteamAppId.ToString();
+                return this.steamAppId;
             }
-        }
 
-        /// <summary>Gets or sets the Steam Application Id to react to.</summary>
-        public int SteamAppId { get; set; } = 0;
-
-        /// <summary>Gets a human-readable summary of the result of most recent check.</summary>
-        [JsonIgnore]
-        public string CurrentCheckInfo { get; private set; }
-
-        /// <summary>Gets or sets the value from the check</summary>
-        /// <remarks>Use value to determine if things have changed since the last trigger.</remarks>
-        public string PreviousCheckResult { get; set; }
-
-        /// <summary>Validates that the trigger has properly built by the end user.</summary>
-        /// <returns>True if the trigger is valid; otherwise false.</returns>
-        public bool Validate()
-        {
-            // Validate SteamAppId
-            if (SteamAppId < 1)
+            set
             {
-                return false;
+                this.Description = "App ID: " + value.ToString();
+                this.steamAppId = value;
             }
-
-            return true;
         }
 
         /// <summary>Checks the conditions of the trigger to determine if it should be activated.</summary>
         /// <returns>True if trigger activated; otherwise false.</returns>
-        public bool Check()
+        public override bool Check()
         {
             using (dynamic conn = WebAPI.GetInterface("ISteamApps"))
             {
@@ -94,6 +83,19 @@ namespace APIReactor.Triggers
             }
 
             return false;
+        }
+
+        /// <summary>Validates that the trigger has properly built by the end user.</summary>
+        /// <returns>True if the trigger is valid; otherwise false.</returns>
+        public override bool Validate()
+        {
+            // Validate SteamAppId
+            if (this.steamAppId < 1)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>Gets a complete list of all applications (not-DLC) from Steam.</summary>

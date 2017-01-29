@@ -21,11 +21,11 @@ namespace APIReactor
         /// <summary>Gets or sets the collection of WebHooks to execute when an exception is thrown.</summary>
         public List<IWebHook> ExceptionWebHooks { get; set; } = null;
 
-        /// <summary>Gets or sets the date and time of last trigger execution.</summary>
-        public DateTime LastTriggered { get; set; } = default(DateTime);
+        /// <summary>Gets or sets the date and time of last time a trigger set off an activation.</summary>
+        public DateTime LastActivated { get; set; } = default(DateTime);
 
         /// <summary>Gets or sets the collection of Triggers that trigger this reactor.</summary>
-        public List<ITrigger> Triggers { get; set; } = null;
+        internal List<Trigger> Triggers { get; set; } = null;
 
         /// <summary>Gets or sets the collection of WebHooks to execute when triggered.</summary>
         public List<IWebHook> WebHooks { get; set; } = null;
@@ -45,7 +45,7 @@ namespace APIReactor
                 if (this.ExceptionWebHooks != null && this.ExceptionWebHooks.Count > 0)
                 {
                     Reactor.ExecuteWebHooks(this.ExceptionWebHooks);
-                    this.LastTriggered = DateTime.Now;
+                    this.LastActivated = DateTime.Now;
                 }
                 else
                 {
@@ -78,7 +78,7 @@ namespace APIReactor
         /// <summary>Checks all triggers in a collection for activations.</summary>
         /// <param name="triggers">Collection of triggers to check.</param>
         /// <returns>True if one or more triggers activated; otherwise false.</returns>
-        internal bool CheckForActivations(List<ITrigger> triggers)
+        internal bool CheckForActivations(List<Trigger> triggers)
         {
             int triggersActivated = 0;
             bool returnResult = false;
@@ -86,6 +86,7 @@ namespace APIReactor
 
             for (int i = 0; i < triggers.Count; i++)
             {
+                triggers[i].ParentLastActivated = this.LastActivated;
                 triggerTime = APIRegistry.GetNextQueryTime(triggers[i].APIName);
                 Terminal.CountdownTo("Querying In", triggerTime);
                 bool result = triggers[i].Check();

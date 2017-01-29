@@ -97,13 +97,13 @@ namespace APIReactor
             }
         }
 
-        /// <summary>Writes a title (in ASCII art) to the console.</summary>
+        /// <summary>Writes the title (in ASCII art) to the console.</summary>
         internal static void WriteTitle()
         {
             TimeSpan uptime = DateTime.Now - Program.StatRuntime;
             if (uptime.Minutes > 1)
             {
-                Console.WriteLine($"Uptime: {uptime.Days} days {uptime.Hours} hours {uptime.Minutes} minutes.", Color.DarkGray);
+                Console.WriteLine($"Uptime: {uptime.PrettyString()}", Color.DarkGray);
             }
 
             Console.WriteLine("This loop: " + DateTime.Now.ToString(), Color.DarkGray);
