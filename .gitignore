@@ -1,5 +1,5 @@
 # DEVELOPMENT TEMP FILE
-SteamReaction/BuildData.cs
+APIReactor/BuildData*.*
 
 
 ## Ignore Visual Studio temporary files, build results, and
@@ -244,3 +244,5 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+APIReactor/BuildData.cs
+APIReactor/BuildData.cs
