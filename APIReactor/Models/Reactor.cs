@@ -4,13 +4,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction
+namespace APIReactor
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SteamReaction.Triggers;
-    using SteamReaction.WebHooks;
+    using APIReactor.Triggers;
+    using APIReactor.WebHooks;
 
     /// <summary>Structure to link steam applications and Web-Hooks triggers</summary>
     public class Reactor
@@ -35,7 +35,7 @@ namespace SteamReaction
         {
             try
             {
-                if (this.CheckTriggers(this.Triggers))
+                if (this.CheckForActivations(this.Triggers))
                 {
                     Reactor.ExecuteWebHooks(this.WebHooks);
                 }
@@ -78,14 +78,18 @@ namespace SteamReaction
         /// <summary>Checks all triggers in a collection for activations.</summary>
         /// <param name="triggers">Collection of triggers to check.</param>
         /// <returns>True if one or more triggers activated; otherwise false.</returns>
-        internal bool CheckTriggers(List<ITrigger> triggers)
+        internal bool CheckForActivations(List<ITrigger> triggers)
         {
             int triggersActivated = 0;
             bool returnResult = false;
+            DateTime triggerTime;
 
             for (int i = 0; i < triggers.Count; i++)
             {
+                triggerTime = APIRegistry.GetNextQueryTime(triggers[i].APIName);
+                Terminal.CountdownTo("Querying In", triggerTime);
                 bool result = triggers[i].Check();
+                APIRegistry.AddQueryRecord(triggers[i].APIName);
 
                 if (result)
                 {

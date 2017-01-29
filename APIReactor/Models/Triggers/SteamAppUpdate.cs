@@ -4,18 +4,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction.Triggers
+namespace APIReactor.Triggers
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using Newtonsoft.Json;
     using SteamKit2;
-    using SteamReaction;
+    using APIReactor;
 
     /// <summary>Activates whenever </summary>
     internal class SteamAppUpdate : ITrigger
     {
+        public string APIName { get; } = "valve:steam";
+
         /// <summary>Gets a human-readable description of what this trigger is about.</summary>
         public string Description
         {
@@ -24,9 +26,6 @@ namespace SteamReaction.Triggers
                 return "App ID: " + this.SteamAppId.ToString();
             }
         }
-
-        /// <summary>Gets or sets the minimum amount of time between requests (if any).</summary>
-        public TimeSpan FloodDelay { get; set; } = new TimeSpan(0, 0, 3, 250);
 
         /// <summary>Gets or sets the Steam Application Id to react to.</summary>
         public int SteamAppId { get; set; } = 0;
@@ -39,19 +38,25 @@ namespace SteamReaction.Triggers
         /// <remarks>Use value to determine if things have changed since the last trigger.</remarks>
         public string PreviousCheckResult { get; set; }
 
-        /// <summary>Get a value indicating whether the trigger was properly built by the end user.</summary>
-        public bool Validate { get; }
+        /// <summary>Validates that the trigger has properly built by the end user.</summary>
+        /// <returns>True if the trigger is valid; otherwise false.</returns>
+        public bool Validate()
+        {
+            // Validate SteamAppId
+            if (SteamAppId < 1)
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         /// <summary>Checks the conditions of the trigger to determine if it should be activated.</summary>
         /// <returns>True if trigger activated; otherwise false.</returns>
         public bool Check()
         {
-            Debug.WriteLine(this.GetType().Name);
-
             using (dynamic conn = WebAPI.GetInterface("ISteamApps"))
             {
-                Terminal.Countdown("Querying In", 4, true);
-
                 KeyValue response = conn.UpToDateCheck1(appid: this.SteamAppId, version: 0);
 
                 if (response["success"].AsBoolean())

@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction.Triggers
+namespace APIReactor.Triggers
 {
     using System;
     using Newtonsoft.Json;
@@ -12,9 +12,8 @@ namespace SteamReaction.Triggers
     /// <summary>Specifies a condition that will trigger Web Hooks when a condition is met.</summary>
     public interface ITrigger
     {
-        /// <summary>Gets the minimum amount of time between requests (if any).</summary>
-        TimeSpan FloodDelay { get; }
-
+        /// <summary>The name of the API this trigger uses.</summary>
+        string APIName { get; }
 
         /// <summary>Gets a human-readable summary of the result of most recent check.</summary>
         string CurrentCheckInfo { get; }
@@ -26,8 +25,9 @@ namespace SteamReaction.Triggers
         /// <remarks>Use value to determine if things have changed since the last trigger.</remarks>
         string PreviousCheckResult { get; }
 
-        /// <summary>Get a value indicating whether the trigger was properly built by the end user.</summary>
-        bool Validate { get; }
+        /// <summary>Validates that the trigger has properly built by the end user.</summary>
+        /// <returns>True if the trigger is valid; otherwise false.</returns>
+        bool Validate();
 
         /// <summary>Checks the conditions of the trigger to determine if it should be activated.</summary>
         /// <returns>True if trigger activated; otherwise false.</returns>

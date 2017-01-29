@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction.WebHooks
+namespace APIReactor.WebHooks
 {
     using System;
     using System.Collections.Generic;

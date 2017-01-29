@@ -4,14 +4,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction
+namespace APIReactor
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using APIReactor.Triggers;
+    using APIReactor.WebHooks;
     using Newtonsoft.Json;
-    using SteamReaction.WebHooks;
 
     /// <summary>Main entry point of application.</summary>
     public class Program
@@ -21,6 +22,9 @@ namespace SteamReaction
 
         /// <summary>Developer toggle. If true disables execution of web-hooks.</summary>
         internal static readonly bool DevDisableWebHooks = false && Debugger.IsAttached;
+
+        /// <summary>Statistic containing the date and time the program started.</summary>
+        internal static readonly DateTime StatRuntime = DateTime.Now;
 
         /// <summary>Full path to "SteamReaction" executable.</summary>
         private static readonly string AppPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -32,7 +36,7 @@ namespace SteamReaction
         private static readonly string LogFile = AppPath + Path.DirectorySeparatorChar + "SteamReaction.log";
 
         /// <summary>Number of seconds in the main loop.</summary>
-        private static readonly int SettingMainLoopDelay = 240;
+        private static readonly TimeSpan SettingMainLoopDelay = new TimeSpan(0, 8, 0);
 
         /// <summary>Collection of reactors to be process.</summary>
         private static List<Reactor> reactors;
@@ -61,10 +65,10 @@ namespace SteamReaction
                     while (true)
                     {
                         Console.Clear();
-                        Terminal.WriteTitle("Steam Reaction");
+                        Terminal.WriteTitle();
                         StartReactors(reactors);
                         Console.WriteLine();
-                        Terminal.Countdown("Re-running all queries in", SettingMainLoopDelay, true);
+                        Terminal.Countdown("Re-running all reactors in", SettingMainLoopDelay);
                     }
                 }
             }

@@ -7,8 +7,8 @@
     <ProjectGuid>{A45820C7-80E9-4C1C-9542-6AFD0FB05D6A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SteamReaction</RootNamespace>
-    <AssemblyName>Steam Reaction</AssemblyName>
+    <RootNamespace>APIReactor</RootNamespace>
+    <AssemblyName>API Reactor</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -50,7 +50,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>SteamReaction.Program</StartupObject>
+    <StartupObject>APIReactor.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>robot.ico</ApplicationIcon>
@@ -89,7 +89,9 @@
     <Compile Include="Models\Reactor.cs" />
     <Compile Include="Models\Stores\APIRegistryEntry.cs" />
     <Compile Include="Models\Stores\APIRegistry.cs" />
-    <Compile Include="Models\Triggers\ITrigger.cs" />
+    <Compile Include="Models\Triggers\ITrigger.cs">
+      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
+    </Compile>
     <Compile Include="Models\Triggers\SteamAppUpdate.cs" />
     <Compile Include="Models\Triggers\TimeElapsed.cs" />
     <Compile Include="Models\WebHooks\DockerHub.cs" />
@@ -103,8 +105,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
-    <None Include="SteamReaction.csproj.vsspell" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="APIReactor.csproj.vsspell" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">

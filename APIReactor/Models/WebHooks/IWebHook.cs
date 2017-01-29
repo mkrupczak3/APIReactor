@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction.WebHooks
+namespace APIReactor.WebHooks
 {
     /// <summary>Interface representing a trigger.</summary>
     public interface IWebHook

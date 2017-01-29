@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction
+namespace APIReactor
 {
     /// <summary>The goal of this collection of extension methods is to make c# code throughout the project more readable.</summary>
     internal static class ExtensionMethods

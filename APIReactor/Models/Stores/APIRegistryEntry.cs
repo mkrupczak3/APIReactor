@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace SteamReaction
+namespace APIReactor
 {
     using System;
 

@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SteamReaction")]
+[assembly: AssemblyTitle("APIReactor")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SteamReaction")]
-[assembly: AssemblyCopyright("Copyright ©  2017 Laclede's LAN")]
+[assembly: AssemblyProduct("APIReactor")]
+[assembly: AssemblyCopyright("Copyright © James Dudley")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

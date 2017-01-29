@@ -3,7 +3,7 @@
 //     Applicable rights reserved
 // </copyright>
 //-----------------------------------------------------------------------
-namespace SteamReaction.WebHooks
+namespace APIReactor.WebHooks
 {
     using System.Collections.Generic;
     using System.Diagnostics;

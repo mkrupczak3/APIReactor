@@ -9,3 +9,4 @@ The fundamentals work, but there are many ways it could be improved:
 * Better Exception handling.
 * Separate UI from mechanics.
 * Make asynchronous.
+* Add time-delay throttling for webhooks.
