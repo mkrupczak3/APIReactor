@@ -106,7 +106,6 @@ namespace APIReactor
                 Console.WriteLine($"Uptime: {uptime.PrettyString()}", Color.DarkGray);
             }
 
-            Console.WriteLine("This loop: " + DateTime.Now.ToString(), Color.DarkGray);
             Console.WriteAscii("API Reactor");
             Console.WriteLine();
         }
