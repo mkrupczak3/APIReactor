@@ -24,9 +24,9 @@ namespace APIReactor.Triggers
         /// <summary>The Date and Time the trigger's parent was activated.</summary>
         public virtual DateTime ParentLastActivated { get; set; }
 
-        /// <summary>Gets or sets the value from the check</summary>
+        /// <summary>The value from the check</summary>
         /// <remarks>Use value to determine if things have changed since the last trigger.</remarks>
-        public string PreviousCheckResult { get; set; } = string.Empty;
+        public string PreviousCheckResult = string.Empty;
 
         /// <summary>Checks the conditions of the trigger to determine if it should be activated.</summary>
         /// <returns>True if trigger activated; otherwise false.</returns>

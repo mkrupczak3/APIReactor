@@ -101,7 +101,7 @@ namespace APIReactor
         internal static void WriteTitle()
         {
             TimeSpan uptime = DateTime.Now - Program.StatRuntime;
-            if (uptime.Minutes > 1)
+            if (uptime.TotalMinutes > 1)
             {
                 Console.WriteLine($"Uptime: {uptime.PrettyString()}", Color.DarkGray);
             }
