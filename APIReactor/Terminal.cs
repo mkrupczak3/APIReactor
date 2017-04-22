@@ -74,7 +74,7 @@ namespace APIReactor
                 {
                     if (period.TotalMinutes > 3)
                     {
-                        displayMsg = msg + " " + Math.Floor(period.TotalMinutes).ToString() + "m " + period.Seconds.ToString()  + "s";
+                        displayMsg = msg + " " + Math.Floor(period.TotalMinutes).ToString() + "m " + period.Seconds.ToString() + "s";
                     }
                     else
                     {

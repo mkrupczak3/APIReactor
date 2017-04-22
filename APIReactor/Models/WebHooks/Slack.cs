@@ -78,7 +78,8 @@ namespace APIReactor.WebHooks
                         + ":fire: Message: " + ex.Message + "\n"
                         + ":fire: Source" + ex.Source + "\n"
                         + ":fire: Stack Trace" + ex.StackTrace
-                )};
+                )
+            };
         }
 
         /// <summary>Executes the trigger.</summary>
