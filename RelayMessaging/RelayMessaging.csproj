@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.6</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="IRelay.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="IRelay.cs">
+      <ExcludeFromSourceAnalysis>False</ExcludeFromSourceAnalysis>
+      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Update="RelayMessage.cs">
+      <ExcludeFromSourceAnalysis>False</ExcludeFromSourceAnalysis>
+      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
+    </Compile>
+  </ItemGroup>
+
+</Project>

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("APIReactor")]
+[assembly: AssemblyTitle("APIReactor.CLI")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("APIReactor")]
+[assembly: AssemblyProduct("APIReactor.CLI")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("f20301c8-ab87-4863-8463-70c5fc736ac8")]
+[assembly: Guid("b7ce1556-fe0a-4fb7-90de-b49064eb35d0")]
 
 // Version information for an assembly consists of the following four values:
 //

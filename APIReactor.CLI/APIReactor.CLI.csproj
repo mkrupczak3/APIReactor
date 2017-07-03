@@ -4,15 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F20301C8-AB87-4863-8463-70C5FC736AC8}</ProjectGuid>
+    <ProjectGuid>{B7CE1556-FE0A-4FB7-90DE-B49064EB35D0}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>APIReactor</RootNamespace>
-    <AssemblyName>APIReactor</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <RootNamespace>APIReactor.CLI</RootNamespace>
+    <AssemblyName>APIReactor.CLI</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,11 +32,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Colorful.Console, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Colorful.Console.1.0.7\lib\net461\Colorful.Console.dll</HintPath>
+    <Reference Include="Colorful.Console, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Colorful.Console.1.1.2\lib\net461\Colorful.Console.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
@@ -65,9 +63,9 @@
     <Compile Include="Models\Triggers\SteamAppUpdate.cs" />
     <Compile Include="Models\Triggers\TimeElapsed.cs" />
     <Compile Include="Models\Triggers\Trigger.cs" />
-    <Compile Include="Models\WebHooks\DockerHub.cs" />
-    <Compile Include="Models\WebHooks\IWebHook.cs" />
-    <Compile Include="Models\WebHooks\Slack.cs" />
+    <Compile Include="Models\Webhooks\DockerHub.cs" />
+    <Compile Include="Models\Webhooks\IWebHook.cs" />
+    <Compile Include="Models\Webhooks\Slack.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Terminal.cs" />
@@ -75,14 +73,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
-    <Content Include="images\robot-crash.png" />
-    <Content Include="images\robot-fire.png" />
-    <Content Include="images\robot.ico" />
-    <Content Include="images\robot.png" />
-    <Content Include="robot.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
