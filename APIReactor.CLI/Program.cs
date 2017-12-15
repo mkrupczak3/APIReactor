@@ -13,14 +13,14 @@
 // <author>James Dudley</author>
 //-----------------------------------------------------------------------
 
-namespace DudleyCodes.APIReactor
+namespace DudleyCodes.APIReactorCLI
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using DudleyCodes.APIReactor.Triggers;
-    using DudleyCodes.APIReactor.WebHooks;
+    using DudleyCodes.APIReactorCLI.Triggers;
+    using DudleyCodes.APIReactorCLI.WebHooks;
     using Newtonsoft.Json;
 
     /// <summary>Main entry point of application.</summary>

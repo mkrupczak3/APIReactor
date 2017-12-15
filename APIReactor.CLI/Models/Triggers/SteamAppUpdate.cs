@@ -14,12 +14,12 @@
 // Snippets taken from https://github.com/dudleycodes/CSharp-Extension-Methods
 //-----------------------------------------------------------------------
 
-namespace DudleyCodes.APIReactor.Triggers
+namespace DudleyCodes.APIReactorCLI.Triggers
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using APIReactor;
+    using APIReactorCLI;
     using Newtonsoft.Json;
     using SteamKit2;
 

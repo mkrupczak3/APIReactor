@@ -14,7 +14,7 @@
 // Snippets taken from https://github.com/dudleycodes/CSharp-Extension-Methods
 //-----------------------------------------------------------------------
 
-namespace DudleyCodes.APIReactor.WebHooks
+namespace DudleyCodes.APIReactorCLI.WebHooks
 {
     using System.Collections.Generic;
     using System.Diagnostics;

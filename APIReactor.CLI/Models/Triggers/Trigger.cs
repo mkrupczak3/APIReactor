@@ -14,7 +14,7 @@
 // Snippets taken from https://github.com/dudleycodes/CSharp-Extension-Methods
 //-----------------------------------------------------------------------
 
-namespace DudleyCodes.APIReactor.Triggers
+namespace DudleyCodes.APIReactorCLI.Triggers
 {
     using System;
     using Newtonsoft.Json;

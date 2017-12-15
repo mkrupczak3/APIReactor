@@ -14,13 +14,13 @@
 // Snippets taken from https://github.com/dudleycodes/CSharp-Extension-Methods
 //-----------------------------------------------------------------------
 
-namespace DudleyCodes.APIReactor
+namespace DudleyCodes.APIReactorCLI
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using DudleyCodes.APIReactor.Triggers;
-    using DudleyCodes.APIReactor.WebHooks;
+    using DudleyCodes.APIReactorCLI.Triggers;
+    using DudleyCodes.APIReactorCLI.WebHooks;
 
     /// <summary>Structure to link steam applications and Web-Hooks triggers</summary>
     public class Reactor

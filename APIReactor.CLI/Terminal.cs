@@ -13,7 +13,7 @@
 // <author>James Dudley</author>
 //-----------------------------------------------------------------------
 
-namespace DudleyCodes.APIReactor
+namespace DudleyCodes.APIReactorCLI
 {
     using System;
     using System.Diagnostics;
@@ -115,7 +115,7 @@ namespace DudleyCodes.APIReactor
                 Console.WriteLine($"Uptime: {uptime.PrettyString()}", Color.DarkGray);
             }
 
-            Console.WriteAscii("API Reactor");
+            Console.WriteAscii("API Reactor LEGACY");
             Console.WriteLine();
         }
 

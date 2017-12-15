@@ -14,7 +14,7 @@
 // Snippets taken from https://github.com/dudleycodes/CSharp-Extension-Methods
 //-----------------------------------------------------------------------
 
-namespace DudleyCodes.APIReactor.WebHooks
+namespace DudleyCodes.APIReactorCLI.WebHooks
 {
     using System;
     using System.Collections.Generic;
@@ -82,7 +82,7 @@ namespace DudleyCodes.APIReactor.WebHooks
                 URL = url,
                 Data = Slack.BuildData(
                     channel: channel,
-                    iconEmoji: ":zbot-fire:",
+                    iconEmoji: ":fire:",
                     username: "SteamReaction Bug",
                     message: ":fire: :fire: Hey @dudley - SteamReaction has crashed! :fire: :fire: \n"
                         + ":fire: Message: " + ex.Message + "\n"
